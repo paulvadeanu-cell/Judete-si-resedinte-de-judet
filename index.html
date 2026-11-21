@@ -73,18 +73,18 @@ const sh=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
 const E={};
 MAP.forEach(c=>{const p=document.createElementNS(NS,"path");p.setAttribute("d",c.d);p.setAttribute("class","cty");p.setAttribute("fill-rule","evenodd");const t=document.createElementNS(NS,"title");t.textContent="";p.appendChild(t);p.onclick=()=>mapClick(c.n);$("M").appendChild(p);E[c.n]={p,c}});
 {const c=E["București"].c,h=document.createElementNS(NS,"circle");h.setAttribute("cx",c.x);h.setAttribute("cy",c.y);h.setAttribute("r",9);h.setAttribute("fill","transparent");h.onclick=()=>mapClick("București");$("M").appendChild(h)}
-const N=6,SV=document.querySelector(".mapbox svg");let deck,round,sel,okc,erc,left,tmr,t0=0,lvl=1,pend=null,pm=0,zm=false,za=0;
+const N=6,SV=document.querySelector(".mapbox svg");let deck,round,sel,okc,erc,left,tmr,t0=0,lvl=1,pend=null,pm=0,zm=false,za=0,bk=null;
 const fmt=ms=>{const s=Math.floor(ms/1000);return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")};
 const tick=()=>{$("tm").textContent=fmt(Date.now()-t0)};
 function el(t,at,par){const e=document.createElementNS(NS,t);for(const k in at)e.setAttribute(k,at[k]);par.appendChild(e);return e}
-function start(){pend=null;za++;zm=false;SV.setAttribute("viewBox","0 0 640 470");SV.classList.remove("pend");clearInterval(tmr);t0=0;$("tm").textContent="0:00";deck=sh(P);round=0;okc=0;erc=0;$("ok").textContent=0;$("er").textContent=0;$("rt").textContent=Math.ceil(P.length/N);$("T").innerHTML="";Object.values(E).forEach(e=>e.p.setAttribute("class","cty"));load()}
+function start(){pend=null;bk=null;za++;zm=false;SV.setAttribute("viewBox","0 0 640 470");SV.classList.remove("pend");clearInterval(tmr);t0=0;$("tm").textContent="0:00";deck=sh(P);round=0;okc=0;erc=0;$("ok").textContent=0;$("er").textContent=0;$("rt").textContent=Math.ceil(P.length/N);$("T").innerHTML="";Object.values(E).forEach(e=>e.p.setAttribute("class","cty"));load()}
 function load(){const set=deck.slice(round*N,round*N+N);left=set.length;sel=null;$("rd").textContent=round+1;$("next").hidden=true;$("msg").textContent=lvl==2?"Nivelul II: după fiecare pereche corectă, apasă județul pe hartă.":"";fill("L",sh(set),0);fill("R",sh(set),1)}
 function fill(id,arr,s){const box=$(id);box.innerHTML="";arr.forEach(p=>{const b=document.createElement("button");b.className="c";b.textContent=p[s];b.onclick=()=>pick(b,p,s);box.appendChild(b)})}
 function pick(b,p,s){if(pend||(zm&&lvl==2)||b.classList.contains("ok"))return;
  if(!t0){t0=Date.now();tmr=setInterval(tick,250)}
  if(!sel||sel.s===s){if(sel)sel.b.classList.remove("sel");sel={b,p,s};b.classList.add("sel");return}
  const a=sel;sel=null;a.b.classList.remove("sel");
- if(a.p===p){[a.b,b].forEach(x=>x.classList.add("ok"));if(lvl==2){pend=p;pm=0;SV.classList.add("pend");$("msg").textContent="Corect! "+p[1]+" este reședința județului "+p[0]+". Acum apasă pe hartă județul "+p[0]+".";return}done(p);zoomTo(p[0]);
+ if(a.p===p){[a.b,b].forEach(x=>x.classList.add("ok"));if(lvl==2){pend=p;pm=0;SV.classList.add("pend");toMap();$("msg").textContent="Corect! "+p[1]+" este reședința județului "+p[0]+". Acum apasă pe hartă județul "+p[0]+".";return}done(p);zoomTo(p[0]);
   if(--left===0){if((round+1)*N<P.length){$("msg").textContent+=" Runda următoare începe imediat…";setTimeout(()=>{round++;load()},4200)}else{clearInterval(tmr);tick();unlock();$("msg").textContent="Felicitări! Ai potrivit toate cele "+P.length+" de perechi în "+fmt(Date.now()-t0)+", cu "+erc+" greșeli. Nivelul II este deblocat: apasă butonul de mai sus."}}}
  else{erc++;$("er").textContent=erc;$("msg").textContent="Încearcă din nou!";[a.b,b].forEach(x=>{x.classList.add("bad");setTimeout(()=>x.classList.remove("bad"),400)})}}
 function show(p){const e=E[p[0]],c=e.c;e.p.setAttribute("class","cty done flash");
@@ -97,8 +97,10 @@ function show(p){const e=E[p[0]],c=e.c;e.p.setAttribute("class","cty done flash"
 $("next").onclick=()=>{round++;load()};
 function bb(c){let a=1e9,b=1e9,x=-1e9,y=-1e9;(c.d.match(/-?[\d.]+,-?[\d.]+/g)||[]).forEach(s=>{const q=s.split(","),u=+q[0],v=+q[1];a=Math.min(a,u);b=Math.min(b,v);x=Math.max(x,u);y=Math.max(y,v)});return[a,b,x,y]}
 function anim(to,ms,cb){const id=++za,f=SV.getAttribute("viewBox").split(" ").map(Number),s0=performance.now();(function step(t){if(id!==za)return;const k=Math.min(1,(t-s0)/ms),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;SV.setAttribute("viewBox",f.map((v,i)=>(v+(to[i]-v)*e).toFixed(2)).join(" "));if(k<1)requestAnimationFrame(step);else if(cb)cb()})(s0);return id}
-function zoomTo(n){const[a,b,x,y]=bb(E[n].c),w=Math.max((x-a)*1.7,(y-b)*1.7*640/470,110),h=w*470/640;zm=true;
- const id=anim([(a+x)/2-w/2,(b+y)/2-h/2,w,h],900,()=>setTimeout(()=>{if(za===id)anim([0,0,640,470],900,()=>{zm=false})},1500))}
+function toMap(){const m=SV.parentNode,r=m.getBoundingClientRect();if(bk==null&&(r.top<0||r.bottom>innerHeight)&&m.scrollIntoView){bk=scrollY;m.scrollIntoView({behavior:"smooth",block:"center"})}}
+function back(){if(bk!=null){scrollTo({top:bk,behavior:"smooth"});bk=null}}
+function zoomTo(n){toMap();const[a,b,x,y]=bb(E[n].c),w=Math.max((x-a)*1.7,(y-b)*1.7*640/470,110),h=w*470/640;zm=true;
+ const id=anim([(a+x)/2-w/2,(b+y)/2-h/2,w,h],900,()=>setTimeout(()=>{if(za===id)anim([0,0,640,470],900,()=>{zm=false;back()})},1500))}
 function unlock(){const b=$("l2");b.disabled=false;b.textContent="Nivelul II";b.classList.add("new")}
 function done(p){okc++;$("ok").textContent=okc;$("msg").textContent="Corect! "+p[1]+" este reședința județului "+p[0]+".";show(p)}
 function endCheck(){if(--left===0){if((round+1)*N<P.length){$("msg").textContent+=" Runda următoare începe imediat…";setTimeout(()=>{round++;load()},4200)}else{clearInterval(tmr);tick();$("msg").textContent="Felicitări! Ai terminat nivelul II în "+fmt(Date.now()-t0)+", cu "+erc+" greșeli."}}}
