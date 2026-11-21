@@ -79,12 +79,12 @@ function el(t,at,par){const e=document.createElementNS(NS,t);for(const k in at)e
 function start(){pend=null;za++;zm=false;SV.setAttribute("viewBox","0 0 640 470");SV.classList.remove("pend");clearInterval(tmr);t0=0;$("tm").textContent="0:00";deck=sh(P);round=0;okc=0;erc=0;$("ok").textContent=0;$("er").textContent=0;$("rt").textContent=Math.ceil(P.length/N);$("T").innerHTML="";Object.values(E).forEach(e=>e.p.setAttribute("class","cty"));load()}
 function load(){const set=deck.slice(round*N,round*N+N);left=set.length;sel=null;$("rd").textContent=round+1;$("next").hidden=true;$("msg").textContent=lvl==2?"Nivelul II: după fiecare pereche corectă, apasă județul pe hartă.":"";fill("L",sh(set),0);fill("R",sh(set),1)}
 function fill(id,arr,s){const box=$(id);box.innerHTML="";arr.forEach(p=>{const b=document.createElement("button");b.className="c";b.textContent=p[s];b.onclick=()=>pick(b,p,s);box.appendChild(b)})}
-function pick(b,p,s){if(pend||zm||b.classList.contains("ok"))return;
+function pick(b,p,s){if(pend||(zm&&lvl==2)||b.classList.contains("ok"))return;
  if(!t0){t0=Date.now();tmr=setInterval(tick,250)}
  if(!sel||sel.s===s){if(sel)sel.b.classList.remove("sel");sel={b,p,s};b.classList.add("sel");return}
  const a=sel;sel=null;a.b.classList.remove("sel");
- if(a.p===p){[a.b,b].forEach(x=>x.classList.add("ok"));if(lvl==2){pend=p;pm=0;SV.classList.add("pend");$("msg").textContent="Corect! "+p[1]+" este reședința județului "+p[0]+". Acum apasă pe hartă județul "+p[0]+".";return}done(p);
-  if(--left===0){if((round+1)*N<P.length){$("msg").textContent+=" Runda următoare începe imediat…";setTimeout(()=>{round++;load()},2800)}else{clearInterval(tmr);tick();unlock();$("msg").textContent="Felicitări! Ai potrivit toate cele "+P.length+" de perechi în "+fmt(Date.now()-t0)+", cu "+erc+" greșeli. Nivelul II este deblocat: apasă butonul de mai sus."}}}
+ if(a.p===p){[a.b,b].forEach(x=>x.classList.add("ok"));if(lvl==2){pend=p;pm=0;SV.classList.add("pend");$("msg").textContent="Corect! "+p[1]+" este reședința județului "+p[0]+". Acum apasă pe hartă județul "+p[0]+".";return}done(p);zoomTo(p[0]);
+  if(--left===0){if((round+1)*N<P.length){$("msg").textContent+=" Runda următoare începe imediat…";setTimeout(()=>{round++;load()},4200)}else{clearInterval(tmr);tick();unlock();$("msg").textContent="Felicitări! Ai potrivit toate cele "+P.length+" de perechi în "+fmt(Date.now()-t0)+", cu "+erc+" greșeli. Nivelul II este deblocat: apasă butonul de mai sus."}}}
  else{erc++;$("er").textContent=erc;$("msg").textContent="Încearcă din nou!";[a.b,b].forEach(x=>{x.classList.add("bad");setTimeout(()=>x.classList.remove("bad"),400)})}}
 function show(p){const e=E[p[0]],c=e.c;e.p.setAttribute("class","cty done flash");
  const big=c.w>=30,w=Math.max(c.w,16);
@@ -100,7 +100,7 @@ function zoomTo(n){const[a,b,x,y]=bb(E[n].c),w=Math.max((x-a)*1.7,(y-b)*1.7*640/
  const id=anim([(a+x)/2-w/2,(b+y)/2-h/2,w,h],900,()=>setTimeout(()=>{if(za===id)anim([0,0,640,470],900,()=>{zm=false})},1500))}
 function unlock(){const b=$("l2");b.disabled=false;b.textContent="Nivelul II";b.classList.add("new")}
 function done(p){okc++;$("ok").textContent=okc;$("msg").textContent="Corect! "+p[1]+" este reședința județului "+p[0]+".";show(p)}
-function endCheck(){if(--left===0){if((round+1)*N<P.length){$("msg").textContent+=" Runda următoare începe imediat…";setTimeout(()=>{round++;load()},lvl==2?4200:2800)}else{clearInterval(tmr);tick();$("msg").textContent="Felicitări! Ai terminat nivelul II în "+fmt(Date.now()-t0)+", cu "+erc+" greșeli."}}}
+function endCheck(){if(--left===0){if((round+1)*N<P.length){$("msg").textContent+=" Runda următoare începe imediat…";setTimeout(()=>{round++;load()},4200)}else{clearInterval(tmr);tick();$("msg").textContent="Felicitări! Ai terminat nivelul II în "+fmt(Date.now()-t0)+", cu "+erc+" greșeli."}}}
 function mapClick(n){if(!pend)return;const p=pend;
  if(n===p[0]){pend=null;SV.classList.remove("pend");done(p);endCheck();zoomTo(p[0]);return}
  erc++;$("er").textContent=erc;pm++;$("msg").textContent="Nu, acesta nu este județul "+p[0]+". Mai încearcă!";
